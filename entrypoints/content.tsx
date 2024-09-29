@@ -1,16 +1,16 @@
-import Tooltip from "../components/Tooltip";
+import Tooltip from "@/components/Tooltip";
 import { createRoot } from "react-dom/client";
-import React from "react";
+import "@/assets/main.css"
 
 export default defineContentScript({
   matches: ["<all_urls>"],
+  cssInjectionMode: "ui",
   main() {
-    console.log("Hello content.");
-
     document.querySelectorAll("a").forEach((element) => {
       let tooltipContainer: HTMLDivElement | null = null;
 
       element.addEventListener("mouseover", () => {
+        element.style.backgroundColor = "yellow";
         tooltipContainer = document.createElement("div");
         tooltipContainer.style.position = "absolute";
         tooltipContainer.style.zIndex = "1000";
@@ -18,14 +18,15 @@ export default defineContentScript({
 
         const rect = element.getBoundingClientRect();
         tooltipContainer.style.left = `${rect.left + window.scrollX}px`;
-        tooltipContainer.style.top = `${rect.top + window.scrollY - 30}px`; // Adjust the position as needed
+        tooltipContainer.style.top = `${rect.top + window.scrollY - 112}px`; // Position the tooltip above the link
 
         const root = createRoot(tooltipContainer);
-        root.render(<Tooltip text="Tooltip test text" />);
+        root.render(<Tooltip text={element.textContent ?? ""} />);
       });
 
       element.addEventListener("mouseout", () => {
         if (tooltipContainer) {
+          element.style.backgroundColor = "";
           tooltipContainer.remove();
           tooltipContainer = null;
         }
