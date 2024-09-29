@@ -1,6 +1,6 @@
 import Tooltip from "@/components/Tooltip";
 import { createRoot } from "react-dom/client";
-import "@/assets/main.css"
+import "@/assets/main.css";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
@@ -8,6 +8,7 @@ export default defineContentScript({
   main() {
     document.querySelectorAll("a").forEach((element) => {
       let tooltipContainer: HTMLDivElement | null = null;
+      let root: ReturnType<typeof createRoot> | null = null;
 
       element.addEventListener("mouseover", () => {
         element.style.backgroundColor = "yellow";
@@ -18,17 +19,19 @@ export default defineContentScript({
 
         const rect = element.getBoundingClientRect();
         tooltipContainer.style.left = `${rect.left + window.scrollX}px`;
-        tooltipContainer.style.top = `${rect.top + window.scrollY - 112}px`; // Position the tooltip above the link
+        tooltipContainer.style.top = `${rect.top + window.scrollY - 112}px`;
 
-        const root = createRoot(tooltipContainer);
+        root = createRoot(tooltipContainer);
         root.render(<Tooltip text={element.textContent ?? ""} />);
       });
 
       element.addEventListener("mouseout", () => {
         if (tooltipContainer) {
           element.style.backgroundColor = "";
+          root?.unmount();
           tooltipContainer.remove();
           tooltipContainer = null;
+          root = null;
         }
       });
     });
