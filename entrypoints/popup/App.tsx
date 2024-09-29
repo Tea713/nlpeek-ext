@@ -1,12 +1,9 @@
-import { useState } from "react";
 import "./App.css";
 import BigSwitch from "@/components/BigSwitch";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div className="w-[320px] h-[360px] flex flex-col justify-center bg-slate-950">
+    <div className="w-[320px] h-[380px] flex flex-col justify-center bg-slate-950">
       <header className="flex items-center justify-between p-4">
         <h1 className="text-lg font-semibold">NLPeek</h1>
       </header>
