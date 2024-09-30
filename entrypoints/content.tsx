@@ -1,38 +1,53 @@
 import Tooltip from "@/components/Tooltip";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
 import "@/assets/main.css";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
   cssInjectionMode: "ui",
   main() {
-    document.querySelectorAll("a").forEach((element) => {
-      let tooltipContainer: HTMLDivElement | null = null;
-      let root: ReturnType<typeof createRoot> | null = null;
+    let tooltipDiv: HTMLDivElement | null = null;
+    let root: ReactDOM.Root | null = null;
 
+    function showTooltip(
+      extractedContent: string,
+      position: { x: number; y: number }
+    ) {
+      if (tooltipDiv) return;
+
+      tooltipDiv = document.createElement("div");
+      tooltipDiv.id = "nlpeek-tooltip";
+      document.body.appendChild(tooltipDiv);
+
+      root = ReactDOM.createRoot(tooltipDiv);
+      root.render(<Tooltip text={extractedContent ?? ""} position={position} />);
+    }
+
+    function hideTooltip() {
+      if (tooltipDiv) {
+        root?.unmount();
+        tooltipDiv.remove();
+        tooltipDiv = null;
+        root = null;
+      }
+    }
+
+    document.querySelectorAll("a").forEach((element: HTMLAnchorElement) => {
       element.addEventListener("mouseover", () => {
         element.style.backgroundColor = "yellow";
-        tooltipContainer = document.createElement("div");
-        tooltipContainer.style.position = "absolute";
-        tooltipContainer.style.zIndex = "1000";
-        document.body.appendChild(tooltipContainer);
+        const rect: DOMRect = element.getBoundingClientRect();
+        const position = {x: rect.left, y: rect.bottom};
 
-        const rect = element.getBoundingClientRect();
-        tooltipContainer.style.left = `${rect.left + window.scrollX}px`;
-        tooltipContainer.style.top = `${rect.top + window.scrollY - 112}px`;
-
-        root = createRoot(tooltipContainer);
-        root.render(<Tooltip text={element.textContent ?? ""} />);
+        chrome.runtime.sendMessage({action: 'fetch-content', url: element.href}, (response) => {
+          if(response?.extractedContent) {
+            showTooltip(response.extractedContent, position);
+          }
+        })
       });
 
       element.addEventListener("mouseout", () => {
-        if (tooltipContainer) {
-          element.style.backgroundColor = "";
-          root?.unmount();
-          tooltipContainer.remove();
-          tooltipContainer = null;
-          root = null;
-        }
+        element.style.backgroundColor = "";
+        hideTooltip();
       });
     });
   },
