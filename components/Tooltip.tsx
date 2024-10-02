@@ -9,7 +9,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, position }) => {
   return (
     <div
       style={{
-        position: "absolute",
+        position: "fixed",
         top: position.y,
         left: position.x,
         zIndex: 1000,

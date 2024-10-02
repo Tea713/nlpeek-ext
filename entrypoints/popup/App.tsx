@@ -11,7 +11,7 @@ function App() {
         <BigSwitch />
       </main>
       <footer className="bg-slate-800 w-full p-4">
-        <div>bruhbruhbruh</div>
+        <div>aboutaboutaboutsettingsettingsetting</div>
       </footer>
     </div>
   );

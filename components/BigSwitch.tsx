@@ -3,7 +3,25 @@ import { useState } from "react";
 export default function BigSwitch() {
   const [isOn, setIsOn] = useState(false);
 
-  const toggleSwitch = () => setIsOn(!isOn);
+  // Initialize the switch state from chrome.storage when the component mounts
+  useEffect(() => {
+    chrome.storage.sync.get(["summarizationEnabled"], (result) => {
+      setIsOn(result.summarizationEnabled || false);
+    });
+  }, []);
+
+  const toggleSwitch = () => {
+    setIsOn((prevState) => {
+      const newState = !prevState;
+      // Update chrome.storage with the new state
+      chrome.storage.sync.set({ summarizationEnabled: newState }, () => {
+        console.log(`Summarization enabled: ${newState}`);
+      });
+      // Send a message to the background script to update the state
+      chrome.runtime.sendMessage({ action: "toggle-summarization", isOn: newState });
+      return newState;
+    });
+  };
 
   return (
     <div className="flex flex-col items-center">
