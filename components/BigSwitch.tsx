@@ -18,7 +18,10 @@ export default function BigSwitch() {
         console.log(`Summarization enabled: ${newState}`);
       });
       // Send a message to the background script to update the state
-      chrome.runtime.sendMessage({ action: "toggle-summarization", isOn: newState });
+      chrome.runtime.sendMessage({
+        action: "toggle-summarization",
+        isOn: newState,
+      });
       return newState;
     });
   };
