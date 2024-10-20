@@ -1,5 +1,6 @@
 import { showTooltip, hideToolTip } from "@/utils/tooltipUtils";
 import { getReadabilityContent } from "@/utils/readabilityUtils";
+import { summarize } from "@/utils/summarizationUtils";
 import "@/assets/main.css";
 
 export default defineContentScript({
@@ -20,23 +21,41 @@ export default defineContentScript({
     });
 
     document.querySelectorAll("a").forEach((element: HTMLAnchorElement) => {
+      let hoverTimeout: NodeJS.Timeout;
+
       element.addEventListener("mouseover", async () => {
         if (!summarizationEnabled) return;
-        element.style.backgroundColor = "yellow";
-        const rect: DOMRect = element.getBoundingClientRect();
-        const position: { x: number; y: number } = {
-          x: rect.left,
-          y: rect.bottom,
-        };
-        const url: string = element.href;
-        const readabilityContent = await getReadabilityContent(url);
-        if (readabilityContent) {
-          showTooltip(readabilityContent, position);
-        }
+
+        hoverTimeout = setTimeout(async () => {
+          const rect: DOMRect = element.getBoundingClientRect();
+          const position: { x: number; y: number } = {
+            x: rect.left,
+            y: rect.bottom,
+          };
+          try {
+            const url: string = element.href;
+            const readabilityContent: {
+              title: string;
+              content: string;
+            } | null = await getReadabilityContent(url);
+            if (!readabilityContent) {
+              return;
+            }
+            const summarizedContent = await summarize(
+              readabilityContent.content
+            );
+            if (!summarizedContent) {
+              return;
+            }
+            showTooltip(readabilityContent.title, summarizedContent, position);
+          } catch (error) {
+            console.error(`Error: ${error}`);
+          }
+        }, 1000);
       });
 
       element.addEventListener("mouseout", () => {
-        element.style.backgroundColor = "";
+        clearTimeout(hoverTimeout);
         hideToolTip();
       });
     });

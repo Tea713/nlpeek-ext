@@ -6,6 +6,7 @@ let root: ReactDOM.Root | null = null;
 let hideTooltipTimeout: NodeJS.Timeout;
 
 export function showTooltip(
+  title: string,
   content: string,
   position: { x: number; y: number }
 ) {
@@ -16,7 +17,9 @@ export function showTooltip(
   document.body.appendChild(tooltipDiv);
 
   root = ReactDOM.createRoot(tooltipDiv);
-  root.render(<Tooltip text={content ?? ""} position={position} />);
+  root.render(
+    <Tooltip title={title ?? ""} text={content ?? ""} position={position} />
+  );
 
   tooltipDiv.addEventListener("mouseover", () => {
     clearTimeout(hideTooltipTimeout);

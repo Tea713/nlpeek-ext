@@ -1,11 +1,12 @@
 import React from "react";
 
 interface TooltipProps {
+  title: string | null;
   text: string | null;
   position: { x: number; y: number };
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ text, position }) => {
+const Tooltip: React.FC<TooltipProps> = ({ title, text, position }) => {
   return (
     <div
       style={{
@@ -23,6 +24,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, position }) => {
         fontSize: "12px",
       }}
     >
+      <h1 style={{ fontSize: "1.25rem" }}>{title}</h1>
       <p>{text}</p>
     </div>
   );

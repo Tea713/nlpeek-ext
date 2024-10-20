@@ -1,12 +1,14 @@
 import { Readability } from "@mozilla/readability";
 import DOMPurify from "dompurify";
 
-export async function getReadabilityContent(
-  url: string
-): Promise<string | null> {
+export async function getReadabilityContent(url: string): Promise<{
+  title: string;
+  content: string;
+} | null> {
   const response: Response = await fetch(url);
   if (!response.ok) {
     console.error(`Failed to fetch data. Response status: ${response.status}`);
+    return null;
   }
 
   const html = await response.text();
@@ -20,5 +22,5 @@ export async function getReadabilityContent(
   }
 
   const clean = DOMPurify.sanitize(article.content);
-  return clean;
+  return { title: article.title, content: clean };
 }
