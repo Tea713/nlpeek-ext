@@ -1,35 +1,30 @@
-// content.ts
 import {
   showTooltip,
   hideToolTip,
   updateToolTipContent,
 } from "@/utils/tooltipUtils";
+import { summarizationEnabled } from "@/utils/storage";
 import { getReadabilityContent } from "@/utils/readabilityUtils";
 import { summarize } from "@/utils/summarizationUtils";
+import { storage } from "wxt/storage";
 import "@/assets/main.css";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
   cssInjectionMode: "ui",
-  main() {
-    let summarizationEnabled: boolean = false;
+  async main() {
+    let summarizationIsEnabled: boolean | null =
+      await summarizationEnabled.getValue();
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.action === "summarization-state") {
-        summarizationEnabled = message.isOn;
-        console.log(`Summarization enabled: ${summarizationEnabled}`);
-      }
-    });
-
-    chrome.storage.sync.get(["summarizationEnabled"], (result) => {
-      summarizationEnabled = result.summarizationEnabled || false;
+    storage.watch<boolean>("sync:summarizationEnabled", async () => {
+      summarizationIsEnabled = await summarizationEnabled.getValue();
     });
 
     const handleMouseEvents = (element: HTMLAnchorElement) => {
       let hoverTimeout: number;
 
       element.addEventListener("mouseover", () => {
-        if (!summarizationEnabled) return;
+        if (!summarizationIsEnabled) return;
 
         hoverTimeout = window.setTimeout(async () => {
           const rect: DOMRect = element.getBoundingClientRect();
@@ -63,7 +58,6 @@ export default defineContentScript({
               return;
             }
 
-            // Update tooltip with summarized content
             updateToolTipContent(readabilityContent.title, summarizedContent);
           } catch (error) {
             console.error(`Error: ${error}`);

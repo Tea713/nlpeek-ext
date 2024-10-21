@@ -1,24 +1,19 @@
 import { useState } from "react";
+import { summarizationEnabled } from "@/utils/storage";
 
 export default function Switch() {
   const [isOn, setIsOn] = useState(false);
 
   useEffect(() => {
-    chrome.storage.sync.get(["summarizationEnabled"], (result) => {
-      setIsOn(result.summarizationEnabled || false);
+    summarizationEnabled.getValue().then((result) => {
+      setIsOn(result || false);
     });
   }, []);
 
   const toggleSwitch = () => {
     setIsOn((prevState) => {
       const newState = !prevState;
-      chrome.storage.sync.set({ summarizationEnabled: newState }, () => {
-        console.log(`Summarization enabled: ${newState}`);
-      });
-      chrome.runtime.sendMessage({
-        action: "toggle-summarization",
-        isOn: newState,
-      });
+      summarizationEnabled.setValue(newState);
       return newState;
     });
   };
