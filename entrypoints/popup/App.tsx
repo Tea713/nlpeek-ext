@@ -1,5 +1,5 @@
 import "./App.css";
-import BigSwitch from "@/components/BigSwitch";
+import Switch from "@/components/Switch";
 
 function App() {
   return (
@@ -8,7 +8,7 @@ function App() {
         <h1 className="text-lg font-semibold">NLPeek</h1>
       </header>
       <main className="flex-grow p-8">
-        <BigSwitch />
+        <Switch />
       </main>
       <footer className="bg-slate-800 w-full p-4">
         <div>aboutaboutaboutsettingsettingsetting</div>

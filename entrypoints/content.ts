@@ -1,4 +1,9 @@
-import { showTooltip, hideToolTip } from "@/utils/tooltipUtils";
+// content.ts
+import {
+  showTooltip,
+  hideToolTip,
+  updateToolTipContent,
+} from "@/utils/tooltipUtils";
 import { getReadabilityContent } from "@/utils/readabilityUtils";
 import { summarize } from "@/utils/summarizationUtils";
 import "@/assets/main.css";
@@ -20,36 +25,49 @@ export default defineContentScript({
       summarizationEnabled = result.summarizationEnabled || false;
     });
 
-    document.querySelectorAll("a").forEach((element: HTMLAnchorElement) => {
-      let hoverTimeout: NodeJS.Timeout;
+    const handleMouseEvents = (element: HTMLAnchorElement) => {
+      let hoverTimeout: number;
 
-      element.addEventListener("mouseover", async () => {
+      element.addEventListener("mouseover", () => {
         if (!summarizationEnabled) return;
 
-        hoverTimeout = setTimeout(async () => {
+        hoverTimeout = window.setTimeout(async () => {
           const rect: DOMRect = element.getBoundingClientRect();
           const position: { x: number; y: number } = {
             x: rect.left,
             y: rect.bottom,
           };
+          const url: string = element.href;
+          const linkText = element.textContent || url;
+
+          showTooltip(linkText, "Loading...", position);
+
           try {
-            const url: string = element.href;
             const readabilityContent: {
               title: string;
               content: string;
             } | null = await getReadabilityContent(url);
             if (!readabilityContent) {
+              updateToolTipContent(linkText, "Error fetching content.");
               return;
             }
+
             const summarizedContent = await summarize(
               readabilityContent.content
             );
             if (!summarizedContent) {
+              updateToolTipContent(
+                readabilityContent.title,
+                "Error summarizing content."
+              );
               return;
             }
-            showTooltip(readabilityContent.title, summarizedContent, position);
+
+            // Update tooltip with summarized content
+            updateToolTipContent(readabilityContent.title, summarizedContent);
           } catch (error) {
             console.error(`Error: ${error}`);
+            updateToolTipContent(linkText, "Error fetching summary.");
           }
         }, 1000);
       });
@@ -58,6 +76,10 @@ export default defineContentScript({
         clearTimeout(hoverTimeout);
         hideToolTip();
       });
+    };
+
+    document.querySelectorAll("a").forEach((element: HTMLAnchorElement) => {
+      handleMouseEvents(element);
     });
   },
 });
