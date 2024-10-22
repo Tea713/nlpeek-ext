@@ -53,7 +53,17 @@ export default defineContentScript({
           const url: string = element.href;
           const linkText = element.textContent || url;
 
-          showTooltip(linkText, "Loading...", position);
+          let tooltipDiv = showTooltip(linkText, "Loading...", position);
+          tooltipDiv?.addEventListener("mouseover", () => {
+            clearTimeout(hoverOutTimeout);
+          });
+
+          tooltipDiv?.addEventListener("mouseout", () => {
+            clearTimeout(hoverInTimeout);
+            hoverOutTimeout = window.setTimeout(async () => {
+              hideToolTip();
+            }, hoverOutDelay);
+          });
 
           try {
             const readabilityContent: {
@@ -66,7 +76,8 @@ export default defineContentScript({
             }
 
             const summarizedContent = await summarize(
-              readabilityContent.content
+              readabilityContent.content,
+              summaryLength
             );
             if (!summarizedContent) {
               updateToolTipContent(

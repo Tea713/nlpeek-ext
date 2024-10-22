@@ -1,7 +1,8 @@
-export async function summarize(content: string) {
+export async function summarize(content: string, length: string) {
   const url: string = "http://127.0.0.1:8000/summarize";
   const data = {
     content: content,
+    length: length,
   };
 
   try {
