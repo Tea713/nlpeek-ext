@@ -3,30 +3,48 @@ import {
   hideToolTip,
   updateToolTipContent,
 } from "@/utils/tooltipUtils";
-import { summarizationEnabled } from "@/utils/storage";
+import {
+  summarizationEnabled,
+  currentHoverInDelay,
+  currentHoverOutDelay,
+  currentSummaryLength,
+} from "@/utils/storage";
 import { getReadabilityContent } from "@/utils/readabilityUtils";
-import { summarize } from "@/utils/summarizationUtils";
 import { storage } from "wxt/storage";
+import { summarize } from "@/utils/summarizationUtils";
 import "@/assets/main.css";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
   cssInjectionMode: "ui",
   async main() {
-    let summarizationIsEnabled: boolean | null =
-      await summarizationEnabled.getValue();
+    let summarizationIsEnabled: boolean = await summarizationEnabled.getValue();
+    let summaryLength: string = await currentSummaryLength.getValue();
+    let hoverInDelay: number = await currentHoverInDelay.getValue();
+    let hoverOutDelay: number = await currentHoverOutDelay.getValue();
 
     storage.watch<boolean>("sync:summarizationEnabled", async () => {
       summarizationIsEnabled = await summarizationEnabled.getValue();
     });
+    storage.watch<string>("sync:currentSummaryLength", async () => {
+      summaryLength = await currentSummaryLength.getValue();
+    });
+    storage.watch<number>("sync:currentHoverInDelay", async () => {
+      hoverInDelay = await currentHoverInDelay.getValue();
+    });
+    storage.watch<number>("sync:currentHoverOutDelay", async () => {
+      hoverOutDelay = await currentHoverOutDelay.getValue();
+    });
 
     const handleMouseEvents = (element: HTMLAnchorElement) => {
-      let hoverTimeout: number;
+      let hoverInTimeout: number;
+      let hoverOutTimeout: number;
 
       element.addEventListener("mouseover", () => {
         if (!summarizationIsEnabled) return;
 
-        hoverTimeout = window.setTimeout(async () => {
+        clearTimeout(hoverOutTimeout);
+        hoverInTimeout = window.setTimeout(async () => {
           const rect: DOMRect = element.getBoundingClientRect();
           const position: { x: number; y: number } = {
             x: rect.left,
@@ -63,12 +81,14 @@ export default defineContentScript({
             console.error(`Error: ${error}`);
             updateToolTipContent(linkText, "Error fetching summary.");
           }
-        }, 1000);
+        }, hoverInDelay);
       });
 
       element.addEventListener("mouseout", () => {
-        clearTimeout(hoverTimeout);
-        hideToolTip();
+        clearTimeout(hoverInTimeout);
+        hoverOutTimeout = window.setTimeout(async () => {
+          hideToolTip();
+        }, hoverOutDelay);
       });
     };
 
