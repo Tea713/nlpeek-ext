@@ -12,6 +12,7 @@ import {
 import { getReadabilityContent } from "@/utils/readabilityUtils";
 import { storage } from "wxt/storage";
 import { summarize } from "@/utils/summarizationUtils";
+import { getCachedSummary, setCachedSummary } from "@/utils/cache";
 import "@/assets/main.css";
 
 export default defineContentScript({
@@ -75,6 +76,12 @@ export default defineContentScript({
               return;
             }
 
+            const cached = await getCachedSummary(url, summaryLength);
+            if (cached) {
+              updateToolTipContent(readabilityContent.title, cached);
+              return;
+            }
+
             const summarizedContent = await summarize(
               readabilityContent.content,
               summaryLength
@@ -88,6 +95,7 @@ export default defineContentScript({
             }
 
             updateToolTipContent(readabilityContent.title, summarizedContent);
+            setCachedSummary(url, summaryLength, summarizedContent);
           } catch (error) {
             console.error(`Error: ${error}`);
             updateToolTipContent(linkText, "Error fetching summary.");
