@@ -3,16 +3,14 @@ import {
   hideToolTip,
   updateToolTipContent,
 } from "@/utils/tooltipUtils";
+import { fetchTooltipContent } from "@/utils/fetchContentUtils";
 import {
   summarizationEnabled,
   currentHoverInDelay,
   currentHoverOutDelay,
   currentSummaryLength,
 } from "@/utils/storage";
-import { getReadabilityContent } from "@/utils/readabilityUtils";
 import { storage } from "wxt/storage";
-import { summarize } from "@/utils/summarizationUtils";
-import { getCachedSummary, setCachedSummary } from "@/utils/cache";
 import "@/assets/main.css";
 
 export default defineContentScript({
@@ -46,62 +44,37 @@ export default defineContentScript({
         clearTimeout(hoverOutTimeout);
       };
 
+      const initializeToolTip = (tooltipDiv: HTMLDivElement | undefined) => {
+        tooltipDiv?.addEventListener("mouseover", () => {
+          clearAllTimeouts();
+        });
+
+        tooltipDiv?.addEventListener("mouseout", () => {
+          clearAllTimeouts();
+          hoverOutTimeout = window.setTimeout(async () => {
+            hideToolTip();
+          }, hoverOutDelay);
+        });
+      };
+
       element.addEventListener("mouseover", () => {
         if (!summarizationIsEnabled) return;
 
         clearAllTimeouts();
         hoverInTimeout = window.setTimeout(async () => {
-          const rect: DOMRect = element.getBoundingClientRect();
           const url: string = element.href;
-          const linkText = element.textContent || url;
+          const anchorText = element.textContent || url;
 
-          let tooltipDiv = showTooltip(linkText, "Loading...", element);
-          tooltipDiv?.classList.add("tooltip");
-          tooltipDiv?.addEventListener("mouseover", () => {
-            clearAllTimeouts();
-          });
+          let tooltipDiv = showTooltip(anchorText, "Loading...", element);
+          initializeToolTip(tooltipDiv);
 
-          tooltipDiv?.addEventListener("mouseout", () => {
-            clearAllTimeouts();
-            hoverOutTimeout = window.setTimeout(async () => {
-              hideToolTip();
-            }, hoverOutDelay);
-          });
+          const result = await fetchTooltipContent(
+            url,
+            anchorText,
+            summaryLength
+          );
 
-          try {
-            const readabilityContent: {
-              title: string;
-              content: string;
-            } | null = await getReadabilityContent(url);
-            if (!readabilityContent) {
-              updateToolTipContent(linkText, "Error fetching content.");
-              return;
-            }
-
-            const cached = await getCachedSummary(url, summaryLength);
-            if (cached) {
-              updateToolTipContent(readabilityContent.title, cached);
-              return;
-            }
-
-            const summarizedContent = await summarize(
-              readabilityContent.content,
-              summaryLength
-            );
-            if (!summarizedContent) {
-              updateToolTipContent(
-                readabilityContent.title,
-                "Error summarizing content."
-              );
-              return;
-            }
-
-            updateToolTipContent(readabilityContent.title, summarizedContent);
-            setCachedSummary(url, summaryLength, summarizedContent);
-          } catch (error) {
-            console.error(`Error: ${error}`);
-            updateToolTipContent(linkText, "Error fetching summary.");
-          }
+          updateToolTipContent(result.title, result.content);
         }, hoverInDelay);
       });
 

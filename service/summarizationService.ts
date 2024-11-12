@@ -1,5 +1,5 @@
-export async function summarize(content: string, length: string) {
-  const url: string = "https://b4b7-34-31-35-169.ngrok-free.app/summarize";
+export async function getSummary(content: string, length: string) {
+  const url: string = "https://bf51-34-82-137-67.ngrok-free.app/summarize";
   const data = {
     content: content,
     length: length,
