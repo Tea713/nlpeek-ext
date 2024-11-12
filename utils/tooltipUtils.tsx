@@ -43,7 +43,7 @@ function calculateTooltipPosition(element: HTMLElement): Position {
 let tooltipDiv: HTMLDivElement | null = null;
 let root: ReactDOM.Root | null = null;
 let currentTitle: string = "";
-let currentPosition: { x: number; y: number } = { x: 0, y: 0 };
+let currentPosition: Position = { x: 0, y: 0 };
 
 export function showTooltip(
   title: string,
