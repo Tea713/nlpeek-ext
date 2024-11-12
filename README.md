@@ -4,4 +4,4 @@ NLPeek is a browser extension that provides link summarization using AI. When yo
 
 ## How It Works
 
-The summarization feature is powered by an AI backend that processes the content of the links and generates concise summaries. The backend service is not included in this repository and is being worked on.
+The summarization feature is powered by an AI backend that processes the content of the links and generates concise summaries. The backend service is not included in this repository and is being worked on. However, you can try out a prototype at https://www.kaggle.com/code/tea713/nlpeek-fastapi
