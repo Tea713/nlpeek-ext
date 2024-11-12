@@ -6,44 +6,21 @@ interface Position {
   y: number;
 }
 
-function calculateTooltipPosition(element: HTMLElement): Position {
-  const rect = element.getBoundingClientRect();
-  const scrollX = window.scrollX;
-  const scrollY = window.scrollY;
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  
-  // Initial position below the element
-  let x = rect.left + scrollX;
-  let y = rect.bottom + scrollY + 5; // 5px offset
-  
-  // Create dummy element to get tooltip dimensions
-  const dummy = document.createElement('div');
-  dummy.style.visibility = 'hidden';
-  dummy.style.position = 'absolute';
-  dummy.className = 'tooltip';
-  document.body.appendChild(dummy);
-  const tooltipWidth = dummy.offsetWidth;
-  const tooltipHeight = dummy.offsetHeight;
-  document.body.removeChild(dummy);
-  
-  // Check right boundary
-  if (rect.left + tooltipWidth > viewportWidth) {
-    x = rect.right - tooltipWidth + scrollX;
-  }
-  
-  // Check bottom boundary
-  if (rect.bottom + tooltipHeight > viewportHeight) {
-    y = rect.top - tooltipHeight + scrollY - 5;
-  }
-  
-  return { x, y };
-}
-
 let tooltipDiv: HTMLDivElement | null = null;
 let root: ReactDOM.Root | null = null;
 let currentTitle: string = "";
 let currentPosition: Position = { x: 0, y: 0 };
+
+function calculateTooltipPosition(element: HTMLElement): Position {
+  const rect = element.getBoundingClientRect();
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
+
+  let x = rect.left + scrollX;
+  let y = rect.bottom + scrollY + 5; // 5px offset
+
+  return { x, y };
+}
 
 export function showTooltip(
   title: string,
