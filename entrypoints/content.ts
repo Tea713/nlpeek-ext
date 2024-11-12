@@ -41,26 +41,28 @@ export default defineContentScript({
       let hoverInTimeout: number;
       let hoverOutTimeout: number;
 
+      const clearAllTimeouts = () => {
+        clearTimeout(hoverInTimeout);
+        clearTimeout(hoverOutTimeout);
+      };
+
       element.addEventListener("mouseover", () => {
         if (!summarizationIsEnabled) return;
 
-        clearTimeout(hoverOutTimeout);
+        clearAllTimeouts();
         hoverInTimeout = window.setTimeout(async () => {
           const rect: DOMRect = element.getBoundingClientRect();
-          const position: { x: number; y: number } = {
-            x: rect.left,
-            y: rect.bottom,
-          };
           const url: string = element.href;
           const linkText = element.textContent || url;
 
-          let tooltipDiv = showTooltip(linkText, "Loading...", position);
+          let tooltipDiv = showTooltip(linkText, "Loading...", element);
+          tooltipDiv?.classList.add("tooltip");
           tooltipDiv?.addEventListener("mouseover", () => {
-            clearTimeout(hoverOutTimeout);
+            clearAllTimeouts();
           });
 
           tooltipDiv?.addEventListener("mouseout", () => {
-            clearTimeout(hoverInTimeout);
+            clearAllTimeouts();
             hoverOutTimeout = window.setTimeout(async () => {
               hideToolTip();
             }, hoverOutDelay);
@@ -104,7 +106,7 @@ export default defineContentScript({
       });
 
       element.addEventListener("mouseout", () => {
-        clearTimeout(hoverInTimeout);
+        clearAllTimeouts();
         hoverOutTimeout = window.setTimeout(async () => {
           hideToolTip();
         }, hoverOutDelay);

@@ -1,5 +1,5 @@
 export async function summarize(content: string, length: string) {
-  const url: string = "http://127.0.0.1:8000/summarize";
+  const url: string = "https://b4b7-34-31-35-169.ngrok-free.app/summarize";
   const data = {
     content: content,
     length: length,
