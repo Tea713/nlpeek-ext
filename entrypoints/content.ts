@@ -65,7 +65,7 @@ export default defineContentScript({
           const url: string = element.href;
           const anchorText = element.textContent || url;
 
-          let tooltipDiv = showTooltip(anchorText, "Loading...", element);
+          let tooltipDiv = showTooltip(anchorText, "", element, true);
           initializeToolTip(tooltipDiv);
 
           const result = await fetchTooltipContent(

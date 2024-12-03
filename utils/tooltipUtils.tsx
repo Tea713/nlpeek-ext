@@ -25,7 +25,8 @@ function calculateTooltipPosition(element: HTMLElement): Position {
 export function showTooltip(
   title: string,
   content: string,
-  element: HTMLElement
+  element: HTMLElement,
+  isLoading: boolean
 ) {
   if (tooltipDiv) return;
   const position = calculateTooltipPosition(element);
@@ -37,7 +38,7 @@ export function showTooltip(
   currentTitle = title;
   currentPosition = position;
   root = ReactDOM.createRoot(tooltipDiv);
-  root.render(<Tooltip title={title} content={content} position={position} />);
+  root.render(<Tooltip title={title} content={content} position={position} isLoading={isLoading}/>);
 
   return tooltipDiv;
 }
