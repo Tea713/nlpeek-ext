@@ -1,9 +1,10 @@
 import React from "react";
+import Typewriter from "typewriter-effect";
 import ProgressSpinner from "./ProgressSpinner";
 
 interface TooltipProps {
   title: string;
-  content: React.ReactNode;
+  content: string;
   position?: { x: number; y: number };
   isLoading?: boolean;
 }
@@ -75,7 +76,14 @@ const Tooltip: React.FC<TooltipProps> = ({
             />
           </div>
         ) : (
-          content
+          <Typewriter
+            options={{
+              strings: content,
+              autoStart: true,
+              loop: false,
+              delay: 10,
+            }}
+          />
         )}
       </div>
     </div>
