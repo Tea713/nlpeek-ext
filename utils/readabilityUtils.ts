@@ -1,4 +1,4 @@
-import { Readability } from "@mozilla/readability";
+import { Readability, isProbablyReaderable } from "@mozilla/readability";
 import DOMPurify from "dompurify";
 
 export async function getReadabilityContent(url: string): Promise<{
@@ -14,13 +14,18 @@ export async function getReadabilityContent(url: string): Promise<{
   const html = await response.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
-  const reader = new Readability(doc);
-  const article = reader.parse();
-  if (!article) {
-    console.error("Fail to parse content with Readability.js.");
-    return null;
-  }
+  if (isProbablyReaderable(doc)) {
+    const reader = new Readability(doc);
+    const article = reader.parse();
+    if (!article) {
+      console.error("Fail to parse content with Readability.js.");
+      return null;
+    }
 
-  const clean = DOMPurify.sanitize(article.content);
-  return { title: article.title, content: clean };
+    const clean = DOMPurify.sanitize(article.content);
+    return { title: article.title, content: clean };
+  } else {
+    const clean = DOMPurify.sanitize(html);
+    return { title: doc.title, content: clean };
+  }
 }
