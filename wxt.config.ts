@@ -6,5 +6,7 @@ export default defineConfig({
   manifest: {
     permissions: ["storage", "tabs"],
     host_permissions: ["https://*/*", "http://*/*"],
+    name: "NlPeek",
+    description: "AI-powered hyperlink summarization tool"
   },
 });

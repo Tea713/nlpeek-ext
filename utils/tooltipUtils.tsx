@@ -57,10 +57,23 @@ export function updateToolTipContent(newTitle: string, newContent: string) {
 }
 
 export function hideToolTip() {
-  if (tooltipDiv) {
-    root?.unmount();
-    tooltipDiv.remove();
-    tooltipDiv = null;
-    root = null;
+  if (tooltipDiv && root) {
+    // First render with animation state
+    root.render(
+      <Tooltip
+        title={currentTitle}
+        content=""
+        position={currentPosition}
+        isVisible={false}
+      />
+    );
+
+    // Wait for animation to complete before removing
+    setTimeout(() => {
+      root?.unmount();
+      tooltipDiv?.remove();
+      tooltipDiv = null;
+      root = null;
+    }, 200); // Match this with the transition duration
   }
 }

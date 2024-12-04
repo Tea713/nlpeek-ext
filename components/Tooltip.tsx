@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Typewriter from "typewriter-effect";
 import ProgressSpinner from "./ProgressSpinner";
 
@@ -7,6 +7,7 @@ interface TooltipProps {
   content: string;
   position?: { x: number; y: number };
   isLoading?: boolean;
+  isVisible?: boolean; // Add this line
 }
 
 const Tooltip: React.FC<TooltipProps> = ({
@@ -14,7 +15,22 @@ const Tooltip: React.FC<TooltipProps> = ({
   content,
   position = { x: 20, y: 20 },
   isLoading = false,
+  isVisible: propIsVisible, // Rename to avoid conflict
 }) => {
+  const [internalIsVisible, setInternalIsVisible] = useState(false);
+  
+  // Use prop if provided, otherwise use internal state
+  const isVisible = propIsVisible !== undefined ? propIsVisible : internalIsVisible;
+
+  useEffect(() => {
+    // Only trigger animation if no isVisible prop is provided
+    if (propIsVisible === undefined) {
+      requestAnimationFrame(() => {
+        setInternalIsVisible(true);
+      });
+    }
+  }, [propIsVisible]);
+
   const tooltipStyle: React.CSSProperties = {
     position: "absolute",
     willChange: "transform",
@@ -31,12 +47,15 @@ const Tooltip: React.FC<TooltipProps> = ({
     fontSize: "14px",
     boxShadow:
       "0 10px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
-    transition: "opacity 0.2s ease-in-out, transform 0.2s ease-in-out",
     wordWrap: "break-word",
     lineHeight: 1.6,
-    // backdropFilter: "blur(20px)",
     scrollbarWidth: "thin",
     scrollbarColor: "rgba(96, 165, 250, 0.5) rgba(255, 255, 255, 0.1)",
+    
+    // Animation properties
+    opacity: isVisible ? 1 : 0,
+    transform: isVisible ? "scale(1) translateY(0)" : "scale(0.95) translateY(-30px)",
+    transition: "opacity 0.2s ease-out, transform 0.2s ease-out",
   };
 
   const titleStyle: React.CSSProperties = {
